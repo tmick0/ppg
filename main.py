@@ -1,19 +1,21 @@
 import sys
 import numpy as np
 from codec import SciKitCodec
-from filter import PaethFilter
+from filter import PaethFilter, UniformGlitchFilter
 
 np.seterr(all='ignore')
 
 def main(infile, outfile):
     codec = SciKitCodec()
     paeth = PaethFilter()
+    glitch = UniformGlitchFilter(rate=0.00005)
     
-    raw = codec.decode(infile)
-    paeth_encoded = paeth.encode(raw)
-    paeth_decoded = paeth.decode(paeth_encoded)
+    f = codec.decode(infile)
+    f = paeth.encode(f)
+    f = glitch.encode(f)
+    f = paeth.decode(f)
     
-    codec.encode(paeth_decoded, outfile)
+    codec.encode(f, outfile)
     return 0
 
 if __name__ == "__main__":
