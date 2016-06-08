@@ -1,22 +1,36 @@
 import sys
 import numpy as np
 from codec import SciKitCodec
-from filter import RandomLineFilter, UniformGlitchFilter
+from filter import PaethFilter, RandomLineFilter, UniformGlitchFilter, SubFilter, FilterChain, FilterStack
 
 np.seterr(all='ignore')
 
 def main(infile, outfile):
-    codec  = SciKitCodec()
-    rlf    = RandomLineFilter()
-    glitch = UniformGlitchFilter(rate=0.0005)
+    codec = SciKitCodec()
+
+    chain = FilterChain(
+    
+        FilterStack(
+            PaethFilter(),
+            UniformGlitchFilter(rate=0.00001)
+        ),
+    
+        FilterStack(
+            RandomLineFilter(blacklist=[SubFilter]),
+            UniformGlitchFilter(rate=0.0005)
+        ),
+        
+        FilterStack(
+            SubFilter(),
+            UniformGlitchFilter(rate=0.00001)
+        )
+    
+    )
     
     f = codec.decode(infile)
-    
-    f = rlf.encode(f)
-    f = glitch.encode(f)
-    f = rlf.decode(f)
-    
+    f = chain.encode(f)
     codec.encode(f, outfile)
+    
     return 0
 
 if __name__ == "__main__":
