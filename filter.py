@@ -6,8 +6,20 @@ class AbstractFilter (object):
         raise NotImplementedError()
     def decode(self, data):
         raise NotImplementedError()
+        
+class KernelFilter (AbstractFilter):
+    def kernel(self, data, decode=False):
+        raise NotImplementedError()
+    def encode(self, data):
+        return self.kernel(data)
+    def decode(self, data):
+        return self.kernel(data, decode=True)
 
-class PaethFilter (AbstractFilter):
+class NullFilter (KernelFilter):
+    def kernel(self, data, decode=False):
+        return data
+
+class PaethFilter (KernelFilter):
 
     def kernel(self, data, decode=False):
         if decode:
@@ -34,13 +46,7 @@ class PaethFilter (AbstractFilter):
                         copy[j, i, c] -= x
         return copy
 
-    def encode(self, data):
-        return self.kernel(data)
-    
-    def decode(self, data):
-        return self.kernel(data, decode=True)
-
-class SubFilter (AbstractFilter):
+class SubFilter (KernelFilter):
 
     def kernel(self, data, decode=False):
         if decode:
@@ -58,13 +64,7 @@ class SubFilter (AbstractFilter):
                         copy[j, i, c] -= A
         return copy
 
-    def encode(self, data):
-        return self.kernel(data)
-    
-    def decode(self, data):
-        return self.kernel(data, decode=True)
-
-class UniformGlitchFilter (AbstractFilter):
+class UniformGlitchFilter (NullFilter):
     
     def __init__(self, rate=0.005):
         self.rate = rate
@@ -78,5 +78,3 @@ class UniformGlitchFilter (AbstractFilter):
                         data[j, i, c] = randint(0, 255)
         return data
     
-    def decode(self, data):
-        return data
