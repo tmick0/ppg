@@ -55,18 +55,6 @@ class RandomLineFilter (AbstractFilter):
         RandomLineImageFilter(data, self.seed, True)
         return data
 
-#class UniformGlitchFilter (AbstractFilter):
-#    def __init__(self, rate=0.005):
-#        self.rate = rate
-#    def encode(self, data):
-#        height, width, channels = data.shape
-#        for c, j, i in product(xrange(channels), xrange(height), xrange(width)):
-#            if random() < self.rate:
-#                data[j, i, c] = randint(0, 255)
-#        return data
-#    def decode(self, data):
-#        return data
-
 class FilterChain (AbstractFilter):
     def __init__(self, *filters):
         self.filters = filters
