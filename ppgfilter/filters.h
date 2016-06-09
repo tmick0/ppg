@@ -9,7 +9,11 @@ typedef void ImageFilterType(PyArrayObject *data, bool decode);
 typedef void LineFilterType(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
 
 void LineFilter(PyArrayObject *data, LineFilterType* filter, bool decode);
+
 void SubLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
 void SubImageFilter(PyArrayObject *data, bool decode);
+
+void PaethLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
+void PaethImageFilter(PyArrayObject *data, bool decode);
 
 #endif

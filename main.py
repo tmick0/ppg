@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from codec import SciKitCodec
-from filter import SubFilter, UniformGlitchFilter, FilterChain, FilterStack
+from filter import SubFilter, PaethFilter, UniformGlitchFilter, FilterChain, FilterStack
 
 np.seterr(all='ignore')
 
@@ -12,17 +12,13 @@ def main(infile, outfile):
     
         FilterStack(
             SubFilter(),
-            UniformGlitchFilter(rate=0.0001)
+            PaethFilter(),
+            UniformGlitchFilter(rate=0.00001)
         ),
     
         #FilterStack(
         #    RandomLineFilter(blacklist=[SubFilter]),
         #    UniformGlitchFilter(rate=0.0005)
-        #),
-        
-        #FilterStack(
-        #    SubFilter(),
-        #    UniformGlitchFilter(rate=0.00001)
         #)
     
     )

@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import product
 from random import random, randint, WichmannHill
-from ppgfilter import SubImageFilter
+from ppgfilter import SubImageFilter, PaethImageFilter
 
 class AbstractFilter (object):
     def encode(self, data):
@@ -9,14 +9,23 @@ class AbstractFilter (object):
     def decode(self, data):
         raise NotImplementedError()
         
-
-class SubFilter (AbstractFilter):
+class NativeFilter (AbstractFilter):
+    def __init__(self):
+        raise NotImplementedError()
     def encode(self, data):
-        SubImageFilter(data, False)
+        self.f(data, False)
         return data
     def decode(self, data):
-        SubImageFilter(data, True)
+        self.f(data, True)
         return data
+
+class SubFilter (NativeFilter):
+    def __init__(self):
+        self.f = SubImageFilter
+
+class PaethFilter (NativeFilter):
+    def __init__(self):
+        self.f = PaethImageFilter
 
 #class KernelFilter (AbstractFilter):
 #    def kernel(self, data, decode=False):
