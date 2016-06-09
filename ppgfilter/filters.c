@@ -86,15 +86,15 @@ void PaethLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan
             uint8_t A = *((uint8_t *) PyArray_GETPTR3(data, row,   j-1, chan));
             uint8_t B = *((uint8_t *) PyArray_GETPTR3(data, row-1, j,   chan));
             uint8_t C = *((uint8_t *) PyArray_GETPTR3(data, row-1, j-1, chan));
-            int p = A + B - C;
+            uint8_t p = A + B - C;
             
-            unsigned dA = absint(p - A), dB = absint(p - B), dC = absint(p - C);
+            uint8_t dA = A - p, dB = B - p, dC = C - p;
             uint8_t x;
             
-            if(dA < dB && dA < dC){
+            if(dA <= dB && dA <= dC){
                 x = A;
             }
-            else if(dB < dC){
+            else if(dB <= dC){
                 x = B;
             }
             else{

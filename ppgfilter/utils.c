@@ -1,12 +1,5 @@
 #include "utils.h"
 
-int absint(int x){
-    unsigned tmp = x >> (sizeof(int)*8 - 1);
-    x ^= tmp;
-    x += tmp & 1;
-    return x;
-}
-
 void rng_set_state(rng_t *r, uint32_t seed){
     r->state = seed;
 }

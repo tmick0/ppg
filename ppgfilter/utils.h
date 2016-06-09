@@ -13,6 +13,4 @@ uint32_t rng_get_state(rng_t *r);
 void rng_set_state(rng_t *r, uint32_t seed);
 uint32_t rng_next(rng_t *r);
 
-int absint(int x);
-
 #endif
