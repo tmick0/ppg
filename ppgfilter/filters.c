@@ -17,7 +17,7 @@ void LineFilter(PyArrayObject *data, LineFilterType* filter, bool decode){
         dest = data;
     }
 
-    for(int c = 0; c < channels; c++){
+    for(int c = 0; c < channels && c < 3; c++){
         for(int i = 0; i < height; i++){
             filter(data, dest, i, c, decode);
         }
@@ -158,7 +158,7 @@ void RandomLineImageFilter(PyArrayObject *data, uint32_t seed, bool decode){
         dest = data;
     }
     
-    for(int c = 0; c < channels; c++){
+    for(int c = 0; c < channels && c < 3; c++){
         for(int i = 0; i < height; i++){
             LineFilterType *filter;
             switch(rng_next(&r) % 5){
@@ -215,7 +215,7 @@ void UniformGlitchImageFilter(PyArrayObject *data, uint32_t seed, uint32_t thres
     rng_t r;
     rng_set_state(&r, seed);
     
-    for(int c = 0; c < channels; c++){
+    for(int c = 0; c < channels && c < 3; c++){
         for(int i = 0; i < height; i++){
             for(int j = 0; j < width; j++){
                 if(rng_next(&r) < thresh){
