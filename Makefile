@@ -1,8 +1,9 @@
+ppg/ppgfilter.so: c_module/ppgfilter.so
+	cp $< $@
 
-.DUMMY: module clean
+c_module/ppgfilter.so: c_module
+	$(MAKE) -C c_module
 
-module:
-	$(MAKE) -C ppgfilter
-
+.DUMMY: clean
 clean:
-	$(MAKE) -C ppgfilter clean
+	$(MAKE) -C c_module clean

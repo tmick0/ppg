@@ -1,6 +1,6 @@
 import sys
-from codec import SciKitCodec
-from filter import *
+from ppg.codec import SciKitCodec
+from ppg.filter import *
 
 def main(infile=None, outfile=None, scale=None):
     
