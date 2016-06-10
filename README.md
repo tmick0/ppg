@@ -69,3 +69,19 @@ For an example of the usage of FilterChains and FilterStacks, take a look at
 example.py.
 
 ## Using the example script
+
+The example script contains a filter chain suitable for producing decent
+glitch effects on most images. It takes three command line parameters: input
+filename, output filename, and glitch multiplier (optional).
+
+For example (default behavior):
+
+     $ python example.py input.jpg output.jpg
+     
+For example (50% glitchiness):
+
+     $ python example.py input.jpg output.jpg 0.5
+     
+For example (200% glitchiness):
+
+     $ python example.py input.jpg output.jpg 2.0
