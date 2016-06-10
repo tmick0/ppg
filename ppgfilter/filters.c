@@ -272,7 +272,7 @@ void RandomLineImageFilter(PyArrayObject *data, PyListObject *candidates, uint32
     for(int c = 0; c < channels && c < 3; c++){
         LineFilterType *filter = 0;
         for(int i = 0; i < height; i++){
-            if(filter == 0 || rng_next(&r) < corr){
+            if(filter == 0 || rng_next(&r) > corr){
                 filter = funcs[rng_next(&r) % ncands];
             }
             filter(data, dest, i, c, decode);
