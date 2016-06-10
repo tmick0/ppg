@@ -1,7 +1,13 @@
 import numpy as np
 from itertools import product
 from random import random, randint, randrange
-from ppgfilter import SubImageFilter, UpImageFilter, PaethImageFilter, AverageImageFilter, RandomLineImageFilter, UniformGlitchImageFilter
+from ppgfilter import *
+
+__all__ = [
+    "SubFilter", "UpFilter", "PaethFilter", "BrokenPaethFilter",
+    "AverageFilter", "BrokenAverageFilter", "UniformGlitchFilter",
+    "RandomLineFilter", "FilterChain", "FilterStack"
+]
 
 class AbstractFilter (object):
     def encode(self, data):
@@ -31,9 +37,17 @@ class PaethFilter (NativeFilter):
     def __init__(self):
         self.f = PaethImageFilter
 
+class BrokenPaethFilter (NativeFilter):
+    def __init__(self):
+        self.f = BrokenPaethImageFilter
+
 class AverageFilter (NativeFilter):
     def __init__(self):
         self.f = AverageImageFilter
+
+class BrokenAverageFilter (NativeFilter):
+    def __init__(self):
+        self.f = BrokenAverageImageFilter
 
 class UniformGlitchFilter (NativeFilter):
     def __init__(self, rate=0.005):
