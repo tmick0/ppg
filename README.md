@@ -85,3 +85,9 @@ For example (50% glitchiness):
 For example (200% glitchiness):
 
      $ python example.py input.jpg output.jpg 2.0
+
+## Documentation
+
+Docstrings are included for this entire package. There is also a convenience
+method in the Makefile to compile the documentation: make docs. The convenience
+method requires pdoc to be installed.
