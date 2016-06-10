@@ -142,15 +142,15 @@ class RandomLineFilter (AbstractFilter):
             self.seed = randrange(2**32)
         else:
             self.seed = seed
-        self.corr = corr
+        self.corr = correlation
         if candidates == None:
             candidates = ["Sub", "Up", "Paeth", "Average", "BrokenPaeth", "BrokenAverage"]
         self.candidates = candidates
     def encode(self, data):
-        RandomLineImageFilter(data, self.candidates, self.seed, int(self.correlation * 2**32), False)
+        RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), False)
         return data
     def decode(self, data):
-        RandomLineImageFilter(data, self.candidates, self.seed, int(self.correlation * 2**32), True)
+        RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), True)
         return data
 
 class FilterChain (AbstractFilter):
