@@ -46,13 +46,17 @@ class UniformGlitchFilter (NativeFilter):
         return data
 
 class RandomLineFilter (AbstractFilter):
-    def __init__(self):
+    def __init__(self, corr=0.5, candidates=None):
         self.seed = randrange(2**32)
+        self.corr = corr
+        if candidates == None:
+            candidates = ["Sub", "Up", "Paeth", "Average", "BrokenPaeth", "BrokenAverage"]
+        self.candidates = candidates
     def encode(self, data):
-        RandomLineImageFilter(data, self.seed, False)
+        RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), False)
         return data
     def decode(self, data):
-        RandomLineImageFilter(data, self.seed, True)
+        RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), True)
         return data
 
 class FilterChain (AbstractFilter):

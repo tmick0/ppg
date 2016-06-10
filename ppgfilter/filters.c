@@ -1,5 +1,12 @@
 #include "filters.h"
 #include "utils.h"
+//#include <string.h>
+//#include <stdlib.h>
+
+inline int16_t abs16(int16_t v){
+    uint32_t t = v >> 15;
+    return (v + t) ^ t;
+}
 
 void LineFilter(PyArrayObject *data, LineFilterType* filter, bool decode){
 
@@ -83,6 +90,45 @@ void PaethLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan
      
         for(int j = 1; j < width; j++){
         
+            int16_t A = *((uint8_t *) PyArray_GETPTR3(data, row,   j-1, chan));
+            int16_t B = *((uint8_t *) PyArray_GETPTR3(data, row-1, j,   chan));
+            int16_t C = *((uint8_t *) PyArray_GETPTR3(data, row-1, j-1, chan));
+            int16_t p = A + B - C;
+            
+            int16_t dA = abs16(A - p), dB = abs16(B - p), dC = abs16(C - p);
+            uint8_t x;
+            
+            if(dA <= dB && dA <= dC){
+                x = A;
+            }
+            else if(dB <= dC){
+                x = B;
+            }
+            else{
+                x = C;
+            }
+            
+            if(decode){
+                *((uint8_t *) PyArray_GETPTR3(dest, row, j, chan)) += x;
+            }
+            else{
+                *((uint8_t *) PyArray_GETPTR3(dest, row, j, chan)) -= x;
+            }
+            
+        }
+    
+    }
+    
+}
+
+void BrokenPaethLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode){
+
+    int width    = (int) PyArray_DIM(data, 1);
+    
+    if(row > 0){
+     
+        for(int j = 1; j < width; j++){
+        
             uint8_t A = *((uint8_t *) PyArray_GETPTR3(data, row,   j-1, chan));
             uint8_t B = *((uint8_t *) PyArray_GETPTR3(data, row-1, j,   chan));
             uint8_t C = *((uint8_t *) PyArray_GETPTR3(data, row-1, j-1, chan));
@@ -139,9 +185,74 @@ void AverageLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int ch
     
 }
 
-void RandomLineImageFilter(PyArrayObject *data, uint32_t seed, bool decode){
+void BrokenAverageLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode){
+
+    int width    = (int) PyArray_DIM(data, 1);
+    
+    if(row > 0){
+     
+        for(int j = 1; j < width; j++){
+        
+            uint8_t A = *((uint8_t *) PyArray_GETPTR3(data, row,   j-1, chan));
+            uint8_t B = *((uint8_t *) PyArray_GETPTR3(data, row-1, j,   chan));
+            uint8_t x = (A - B) / 2;
+            
+            if(decode){
+                *((uint8_t *) PyArray_GETPTR3(dest, row, j, chan)) += x;
+            }
+            else{
+                *((uint8_t *) PyArray_GETPTR3(dest, row, j, chan)) -= x;
+            }
+            
+        }
+    
+    }
+    
+}
+
+void RandomLineImageFilter(PyArrayObject *data, PyListObject *candidates, uint32_t seed, uint32_t corr, bool decode){
 
     import_array();
+    
+    size_t ncands = PyList_Size((PyObject *) candidates);
+    LineFilterType **funcs = malloc(ncands * sizeof(LineFilterType*));
+    
+    for(int i = 0; i < ncands; i++){
+    
+        PyObject *py_s = PyList_GetItem((PyObject *) candidates, i);
+        char *s = PyString_AsString(py_s);
+        
+        if(s == NULL){
+            return;
+        }
+        
+        if(!strcmp(s, "Null")){
+            funcs[i] = &NullLineFilter;
+        }
+        else if(!strcmp(s, "Sub")){
+            funcs[i] = &SubLineFilter;
+        }
+        else if(!strcmp(s, "Up")){
+            funcs[i] = &UpLineFilter;
+        }
+        else if(!strcmp(s, "Paeth")){
+            funcs[i] = &PaethLineFilter;
+        }
+        else if(!strcmp(s, "Average")){
+            funcs[i] = &AverageLineFilter;
+        }
+        else if(!strcmp(s, "BrokenPaeth")){
+            funcs[i] = &BrokenPaethLineFilter;
+        }
+        else if(!strcmp(s, "BrokenAverage")){
+            funcs[i] = &BrokenAverageLineFilter;
+        }
+        else{
+            PyErr_Format(PyExc_RuntimeError, "Unknown filter '%s'", s);
+            return;
+        }
+        
+    }
 
     rng_t r;
     rng_set_state(&r, seed);
@@ -159,24 +270,10 @@ void RandomLineImageFilter(PyArrayObject *data, uint32_t seed, bool decode){
     }
     
     for(int c = 0; c < channels && c < 3; c++){
+        LineFilterType *filter = 0;
         for(int i = 0; i < height; i++){
-            LineFilterType *filter;
-            switch(rng_next(&r) % 5){
-                case 0:
-                    filter = NullLineFilter;
-                    continue;
-                case 1:
-                    filter = SubLineFilter;
-                    break;
-                case 2:
-                    filter = UpLineFilter;
-                    break;
-                case 3:
-                    filter = PaethLineFilter;
-                    break;
-                case 4:
-                    filter = AverageLineFilter;
-                    break;
+            if(filter == 0 || rng_next(&r) < corr){
+                filter = funcs[rng_next(&r) % ncands];
             }
             filter(data, dest, i, c, decode);
         }
@@ -200,8 +297,16 @@ void PaethImageFilter(PyArrayObject *data, bool decode){
     LineFilter(data, PaethLineFilter, decode);
 }
 
+void BrokenPaethImageFilter(PyArrayObject *data, bool decode){
+    LineFilter(data, BrokenPaethLineFilter, decode);
+}
+
 void AverageImageFilter(PyArrayObject *data, bool decode){
     LineFilter(data, AverageLineFilter, decode);
+}
+
+void BrokenAverageImageFilter(PyArrayObject *data, bool decode){
+    LineFilter(data, BrokenAverageLineFilter, decode);
 }
 
 void UniformGlitchImageFilter(PyArrayObject *data, uint32_t seed, uint32_t thresh){

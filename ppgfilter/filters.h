@@ -24,9 +24,15 @@ void PaethImageFilter(PyArrayObject *data, bool decode);
 void AverageLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
 void AverageImageFilter(PyArrayObject *data, bool decode);
 
+void BrokenPaethLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
+void BrokenPaethImageFilter(PyArrayObject *data, bool decode);
+
+void BrokenAverageLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
+void BrokenAverageImageFilter(PyArrayObject *data, bool decode);
+
 void NullLineFilter(PyArrayObject *data, PyArrayObject *dest, int row, int chan, bool decode);
 
-void RandomLineImageFilter(PyArrayObject *data, uint32_t seed, bool decode);
+void RandomLineImageFilter(PyArrayObject *data, PyListObject *candidates, uint32_t seed, uint32_t corr, bool decode);
 
 void UniformGlitchImageFilter(PyArrayObject *data, uint32_t seed, uint32_t thresh);
 
