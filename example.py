@@ -27,7 +27,7 @@ def main(infile=None, outfile=None, scale=None):
         # First, we will do a randomized set of PNG-style filters with 95% line
         # correlation, altering pixels at a rate of 0.04%.
         FilterStack(
-            RandomLineFilter(corr=0.95, candidates=["Average","Paeth","Null","Up","Sub"]),
+            RandomLineFilter(correlation=0.95, candidates=["Average","Paeth","Null","Up","Sub"]),
             UniformGlitchFilter(rate=0.00040*scale)
         ),
         
