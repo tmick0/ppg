@@ -7,6 +7,8 @@ need to retain the original, make a copy before invoking any filters.
 """
 
 import numpy as np
+from collections import deque
+from datetime import datetime
 from itertools import product
 from random import random, randint, randrange
 from ppgfilter import *
@@ -31,10 +33,10 @@ class NativeFilter (AbstractFilter):
     """
     def __init__(self):
         raise NotImplementedError()
-    def encode(self, data):
+    def encode(self, data, verbose=False):
         self.f(data, False)
         return data
-    def decode(self, data):
+    def decode(self, data, verbose=False):
         self.f(data, True)
         return data
 
@@ -110,11 +112,11 @@ class UniformGlitchFilter (NativeFilter):
             self.seed = seed
         self.rate = rate
         
-    def encode(self, data):
+    def encode(self, data, verbose=False):
         UniformGlitchImageFilter(data, self.seed, int(self.rate * 2**32))
         return data
         
-    def decode(self, data):
+    def decode(self, data, verbose=False):
         return data
 
 class RandomLineFilter (AbstractFilter):
@@ -146,14 +148,50 @@ class RandomLineFilter (AbstractFilter):
         if candidates == None:
             candidates = ["Sub", "Up", "Paeth", "Average", "BrokenPaeth", "BrokenAverage"]
         self.candidates = candidates
-    def encode(self, data):
+    def encode(self, data, verbose=False):
         RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), False)
         return data
-    def decode(self, data):
+    def decode(self, data, verbose=False):
         RandomLineImageFilter(data, self.candidates, self.seed, int(self.corr * 2**32), True)
         return data
 
-class FilterChain (AbstractFilter):
+class TrackingFilter (AbstractFilter):
+
+    def prechain(self, t, v, d):
+        if v is True:
+            self._start = datetime.now()
+            print("%s[+] %s starting" % ("    " * d, type(t).__name__))
+        
+    def postchain(self, t, v, d):
+        if v is True and d == 0:
+            delta = datetime.now() - self._start
+            print("%s[+] %s finished in %.3fs." % ("    " * d, type(t).__name__, delta.total_seconds()))
+
+    def preencode(self, t, v):
+        if v is True:
+            self.tracking.append(("+", t, datetime.now()))
+            
+    def predecode(self, t, v):
+        if v is True:
+            self.tracking.append(("-", t, datetime.now())) 
+            
+    def postencode(self, t, v, d):
+        if v is True:
+            m, tt, k = self.tracking.pop()
+            if (m, tt) != ("+", t):
+                raise RuntimeError("bad tracking state")
+            delta = datetime.now() - k
+            print("%s[+] Encoded with %s in %.3fs." % ("    " * (d+1), type(t).__name__, delta.total_seconds()))
+    
+    def postdecode(self, t, v, d):
+        if v is True:
+            m, tt, k = self.tracking.pop()
+            if (m, tt) != ("-", t):
+                raise RuntimeError("bad tracking state")
+            delta = datetime.now() - k
+            print("%s[-] Decoded with %s in %.3fs." % ("    " * (d+1), type(t).__name__, delta.total_seconds()))
+
+class FilterChain (TrackingFilter):
     """ FilterChain -- Allows multiple filters to be applied consecutively. Each
         filter will have its encode stage run, then its decode stage immediately
         after. The filters will be run in the order they are provided.
@@ -165,15 +203,22 @@ class FilterChain (AbstractFilter):
     """
     def __init__(self, *filters):
         self.filters = filters
-    def encode(self, data):
+        self.tracking = deque()
+    def encode(self, data, verbose=False, depth=0):
+        self.prechain(self, verbose, depth)
         for f in self.filters:
-            data = f.encode(data)
-            data = f.decode(data)
+            self.preencode(f, verbose)
+            data = f.encode(data, verbose, depth+1)
+            self.postencode(f, verbose, depth)
+            self.predecode(f, verbose)
+            data = f.decode(data, verbose, depth+1)
+            self.postdecode(f, verbose, depth)
+        self.postchain(self, verbose, depth)
         return data
     def decode(self, data):
         return data
 
-class FilterStack (AbstractFilter):
+class FilterStack (TrackingFilter):
     """ FilterStack -- Allows multiple filters to be applied "together." First, 
         each filter will have its encode stage executed, in the order the
         filters are provided to the stack. Then, each filter's decode stage will
@@ -184,13 +229,25 @@ class FilterStack (AbstractFilter):
             - Accepts several arguments, each one being an instantiated filter
               to add to the stack.
     """
+    
     def __init__(self, *filters):
         self.filters = filters
-    def encode(self, data):
+        self.tracking = deque()
+        
+    def encode(self, data, verbose=False, depth=0):
+        self.prechain(self, verbose, depth)
         for f in self.filters:
+            self.preencode(f, verbose)
             data = f.encode(data)
+            self.postencode(f, verbose, depth)
         for f in reversed(self.filters):
+            self.predecode(f, verbose)
             data = f.decode(data)
+            self.postdecode(f, verbose, depth)
+        self.postchain(self, verbose, depth)
         return data
-    def decode(self, data):
+        
+    def decode(self, data, verbose=False, depth=0):
         return data
+    
+

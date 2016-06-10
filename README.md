@@ -71,20 +71,47 @@ example.py.
 ## Using the example script
 
 The example script contains a filter chain suitable for producing decent
-glitch effects on most images. It takes three command line parameters: input
-filename, output filename, and glitch multiplier (optional).
+glitch effects on most images. It takes four command line parameters: input
+filename, output filename, glitch multiplier (optional), and quiet (optional).
+The glitch multiplier is a float scalar. The quiet param will suppress the
+performance output if its value is "quiet" or "q".
 
 For example (default behavior):
 
      $ python example.py input.jpg output.jpg
-     
-For example (50% glitchiness):
+     [+] FilterChain starting
+        [+] FilterStack starting
+            [+] Encoded with RandomLineFilter in 0.003s.
+            [+] Encoded with UniformGlitchFilter in 0.001s.
+            [-] Decoded with UniformGlitchFilter in 0.000s.
+            [-] Decoded with RandomLineFilter in 0.002s.
+        [+] Encoded with FilterStack in 0.006s.
+        [-] Decoded with FilterStack in 0.000s.
+        [+] FilterStack starting
+            [+] Encoded with BrokenPaethFilter in 0.007s.
+            [+] Encoded with UniformGlitchFilter in 0.002s.
+            [-] Decoded with UniformGlitchFilter in 0.000s.
+            [-] Decoded with BrokenPaethFilter in 0.008s.
+        [+] Encoded with FilterStack in 0.016s.
+        [-] Decoded with FilterStack in 0.000s.
+        [+] FilterStack starting
+            [+] Encoded with BrokenAverageFilter in 0.002s.
+            [+] Encoded with UniformGlitchFilter in 0.001s.
+            [-] Decoded with UniformGlitchFilter in 0.000s.
+            [-] Decoded with BrokenAverageFilter in 0.002s.
+        [+] Encoded with FilterStack in 0.005s.
+        [-] Decoded with FilterStack in 0.000s.
+    [+] FilterChain finished in 0.028s.
 
-     $ python example.py input.jpg output.jpg 0.5
      
-For example (200% glitchiness):
+     
+For example (50% glitchiness, quiet):
 
-     $ python example.py input.jpg output.jpg 2.0
+     $ python example.py input.jpg output.jpg 0.5 quiet
+     
+For example (200% glitchiness, quiet):
+
+     $ python example.py input.jpg output.jpg 2.0 quiet
 
 ## Documentation
 

@@ -2,11 +2,11 @@ import sys
 from ppg.codec import SciKitCodec
 from ppg.filter import *
 
-def main(infile=None, outfile=None, scale=None):
+def main(infile=None, outfile=None, scale=None, quiet=""):
     
     # Check command-line arguments
     if infile is None or outfile is None:
-        print("usage: %s <infile> <outfile> [scalar]" % (sys.argv[0]))
+        print("usage: %s <infile> <outfile> [scalar] [quiet]" % (sys.argv[0]))
         return 1
     
     # Default scalar if None
@@ -14,6 +14,9 @@ def main(infile=None, outfile=None, scale=None):
         scale = 1.0
     else:
         scale = float(scale)
+    
+    # Set quiet flag
+    quiet = (quiet in ["quiet", "q"])
 
     # Instantiate a wrapper around skimage to make encoding/decoding files easy
     codec = SciKitCodec()
@@ -42,11 +45,11 @@ def main(infile=None, outfile=None, scale=None):
             BrokenAverageFilter(),
             UniformGlitchFilter(rate=0.00025*scale)
         )
-    
+        
     )
     
     # Apply the filter chain, then save the glitched image
-    f = chain.encode(f)
+    f = chain.encode(f, not quiet)
     codec.encode(f, outfile)
     
     return 0
