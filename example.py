@@ -1,43 +1,51 @@
 import sys
-import numpy as np
 from codec import SciKitCodec
-from filter import SubFilter, UpFilter, PaethFilter, AverageFilter, UniformGlitchFilter, RandomLineFilter, FilterChain, FilterStack
+from filter import *
 
-np.seterr(all='ignore')
+def main(infile=None, outfile=None, scale=None):
+    
+    # Check command-line arguments
+    if infile is None or outfile is None:
+        print("usage: %s <infile> <outfile> [scalar]" % (sys.argv[0]))
+        return 1
+    
+    # Default scalar if None
+    if scale is None:
+        scale = 1.0
+    else:
+        scale = float(scale)
 
-def main(infile, outfile):
+    # Instantiate a wrapper around skimage to make encoding/decoding files easy
     codec = SciKitCodec()
 
+    # Load the file
+    f = codec.decode(infile)
+
+    # Define a filter chain
     chain = FilterChain(
     
-#        FilterStack(
-#            PaethFilter(),
-#            UniformGlitchFilter(rate=0.00001)
-#        ),
-#    
-#        FilterStack(
-#            AverageFilter(),
-#            UniformGlitchFilter(rate=0.0005)
-#        ),
-#        
-#        FilterStack(
-#            UpFilter(),
-#            UniformGlitchFilter(rate=0.00001)
-#        ),
-#        
-#        FilterStack(
-#            SubFilter(),
-#            UniformGlitchFilter(rate=0.00001)
-#        ),
-    
+        # First, we will do a randomized set of PNG-style filters with 95% line
+        # correlation, altering pixels at a rate of 0.04%.
         FilterStack(
-            RandomLineFilter(),
-            UniformGlitchFilter(rate=0.0005)
+            RandomLineFilter(corr=0.95, candidates=["Average","Paeth","Null","Up","Sub"]),
+            UniformGlitchFilter(rate=0.00040*scale)
+        ),
+        
+        # Next, apply our BrokenPaethFilter and alter pixels at 0.001%.
+        FilterStack(
+            BrokenPaethFilter(),
+            UniformGlitchFilter(rate=0.00001*scale)
+        ),
+
+        # Finally, apply the BrokenAverageFilter and alter pixels at 0.025%.
+        FilterStack(
+            BrokenAverageFilter(),
+            UniformGlitchFilter(rate=0.00025*scale)
         )
     
     )
     
-    f = codec.decode(infile)
+    # Apply the filter chain, then save the glitched image
     f = chain.encode(f)
     codec.encode(f, outfile)
     
