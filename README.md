@@ -68,9 +68,39 @@ FilterChains allow additional layers of glitches to be added.
 For an example of the usage of FilterChains and FilterStacks, take a look at
 example.py.
 
+## Plaintext filter representations
+
+The ppg.parser module defines a language suitable for defining filter pipelines
+without actually writing Python code.
+
+In this language, you can define FilterChains, FilterStacks, and regular
+filters, and pass configuration parameters as required.
+
+To create a FilterChain, simply wrap the contents of the chain in ( regular
+parenthesis ). To create a FilterStack, wrap its contents in [ square
+brackets ]. The contents should be comma-separated in both cases.
+
+To instantiate a regular Filter, simply state its name. To pass key-value pairs
+of configuration arguments to this filter, create add a configuration object
+after the filter's name. A configuration object is surrounded by { curly
+braces } and contains a comma-separated list of key-value pairs, where each
+pair is in the format "key=value".
+
+A value in a configuration object may be a list, in which case it should be
+wrapped in [ square brackets ] and comma-separated in the normal way. String
+literals in the configurations do not need to be put in quotes (though the
+quotes will be silently ignored if included).
+
+For an example of a filter chain defined in this format, refer to
+testfilter.txt.
+
+
 ## Using the example script
 
-The example script contains a filter chain suitable for producing decent
+Two example scripts are included in this repository. One uses the Python module
+directly, and the other uses the plaintext filter definition language.
+
+example1.py contains a hardcoded filter chain suitable for producing decent
 glitch effects on most images. It takes four command line parameters: input
 filename, output filename, glitch multiplier (optional), and quiet (optional).
 The glitch multiplier is a float scalar. The quiet param will suppress the
@@ -103,8 +133,6 @@ For example (default behavior):
         [-] Decoded with FilterStack in 0.000s.
     [+] FilterChain finished in 0.028s.
 
-     
-     
 For example (50% glitchiness, quiet):
 
      $ python example.py input.jpg output.jpg 0.5 quiet
@@ -112,6 +140,12 @@ For example (50% glitchiness, quiet):
 For example (200% glitchiness, quiet):
 
      $ python example.py input.jpg output.jpg 2.0 quiet
+
+example2.py allows a plaintext filter chain definition to be loaded from a file.
+The arguments to this script are: input image filename, output image filename,
+filter definition (optional), and quiet (optional). The input/output filenames
+and the quiet option behave the same as they do in example1.py. The default
+filter definition file, if one is not specified, is testfilter.txt.
 
 ## Documentation
 

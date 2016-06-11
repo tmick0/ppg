@@ -1,0 +1,27 @@
+[
+    RandomLineFilter{
+        correlation=0.95,
+        candidates=[Average,Paeth,Null,Up,Sub]
+    },
+    UniformGlitchFilter{
+        rate=0.00040
+    }
+],
+[
+    BrokenPaethFilter,
+    UniformGlitchFilter{
+        rate=0.00001
+    }
+],
+[
+    SubFilter,
+    UniformGlitchFilter{
+        rate=0.00025
+    }
+],
+[
+    BrokenAverageFilter,
+    UniformGlitchFilter{
+        rate=0.00020
+    }
+]
