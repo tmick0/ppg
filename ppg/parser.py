@@ -1,3 +1,8 @@
+""" This module provides the tools necessary to load filter definitions from
+    plaintext files. For a description of the definition language, refer to
+    README.md.
+"""
+
 from string import ascii_letters, digits
 import filter
 
@@ -5,8 +10,15 @@ ALPHANUM = ascii_letters + digits
 NUMERIC  = digits + "."
 
 class Tokenizer (object):
+    """ Splits a string into a list of tokens accepted by the language. The
+        tokens are basically just literals (strings and floats) and symbols
+        (parens, brackets, braces, comma, equal sign).
+    """
 
     def tokenize(self, string):
+        """ Returns the tokenized string
+        """
+    
         tokens  = []
         current = (None, [])
         
@@ -34,22 +46,38 @@ class Tokenizer (object):
                     
 
 class Parser (object):
+    """ Accepts tokens and parses them into a tree structure composed of Python
+        objects (lists, dicts, and primitives).
+    """
 
     class Chain (list):
+        """ Represents a FilterChain
+        """
         pass
     
     class Stack (list):
+        """ Represents a FilterStack
+        """
         pass
     
     class Object (dict):
+        """ Represents a configuration object for a filter
+        """
         pass
     
     class Filter (object):
+        """ Represents a basic filter object, optionally with configuration
+        """
         def __init__(self, name):
             self.name = name
             self.args = None
             
     def parseContainer(self, t, root):
+        """ Parses a container type, i.e. a Chain or a Stack. The parameter 't'
+            must be the corresponding type. The param 'root' is the root of the
+            pre-processed tree.
+        """
+        
         c = t()
         
         funcs = {
@@ -92,12 +120,19 @@ class Parser (object):
         return c
     
     def parseChain(self, root):
+        """ Parses a Chain object using parseContainer
+        """
         return self.parseContainer(Parser.Chain, root)
     
     def parseStack(self, root):
+        """ Parses a Stack object using parseContainer
+        """
         return self.parseContainer(Parser.Stack, root)
     
     def parseLiteral(self, root):
+        """ Parses a literal -- if it can be converted to a float, it will be;
+            otherwise it will be kept as a string
+        """
         res = None
         try:
             res = float(root)
@@ -106,6 +141,8 @@ class Parser (object):
         return res
     
     def parseList(self, root):
+        """ Parses a list of literals
+        """
         c = []
         
         pending = None
@@ -131,6 +168,8 @@ class Parser (object):
         return c
     
     def parseObject(self, root):
+        """ Parses a configuration object
+        """
         p = Parser.Object()
         
         key = None
@@ -177,9 +216,16 @@ class Parser (object):
         return p
     
     def parseFilter(self, name):
+        """ Parses a Filter object
+        """
         return Parser.Filter(name)
     
     def parse(self, tokens):
+        """ Parses a token stream. First, the stream is converted into an
+            intermediate representation of nested lists of tuples. The other
+            parse* methods above handle the conversion of this intermediate
+            representation into the actual parsed tree.
+        """
         
         root = (None, None, [])
         cur = root
@@ -220,8 +266,14 @@ class Parser (object):
         return self.parseChain(root[2])
 
 class Instantiator (object):
+    """ Instantiates an actual filter object based on the contents of a parse
+        tree.
+    """
 
     def instantiate(self, root):
+        """ Recursively converts the parse tree (root) into an actual object
+            from ppg.filter.
+        """
     
         if isinstance(root, Parser.Chain):
             for i,v in enumerate(root):
@@ -248,4 +300,7 @@ class Instantiator (object):
             return root
 
 def LoadFilter(filterString):
+    """ Convenience method for converting a string directly into a real, usable
+        Filter object.
+    """
     return Instantiator().instantiate(Parser().parse(Tokenizer().tokenize(filterString)))
