@@ -215,7 +215,7 @@ class FilterChain (TrackingFilter):
             self.postdecode(f, verbose, depth)
         self.postchain(self, verbose, depth)
         return data
-    def decode(self, data):
+    def decode(self, data, verbose=False, depth=0):
         return data
 
 class FilterStack (TrackingFilter):
