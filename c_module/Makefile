@@ -1,5 +1,5 @@
 ppgfilter.so: setup.py filters.h filters.c utils.h utils.c ppgfilter.c
-	python setup.py build_ext --inplace
+	CFLAGS="-std=c99" python setup.py build_ext --inplace
 
 .PHONY: clean
 clean:
