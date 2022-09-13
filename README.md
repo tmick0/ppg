@@ -12,7 +12,7 @@ data of an image file, PPG takes a different approach. PPG applies transforms to
 actual decoded images, then introduces errors to the transformed data before
 reversing the transform to obtain an altered image. Some more information about
 the philosophy behind PPG can be found at:
-http://lo.calho.st/projects/adventures-in-image-glitching/
+https://lo.calho.st/posts/image-glitching/
 
 ## Building the C module
 
